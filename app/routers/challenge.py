@@ -9,8 +9,8 @@ router = APIRouter()
 
 @router.post("/post")
 async def route_challenge_post(challenge: Challenge, response: Response):
-  challenge_result = get_database().get_from_db(f'{challenge.fingerprint}:challenge_passed')
-  if challenge_result == b'false':
+  challenge_result = check_challenge(challenge.fingerprint)
+  if not challenge_result:
     secret = get_database().get_from_db(f'{challenge.fingerprint}:challenge').decode('utf-8')
     if secret == challenge.secret:
       get_database().add_to_db(f'{challenge.fingerprint}:challenge_passed', 'true', 120)
@@ -18,8 +18,6 @@ async def route_challenge_post(challenge: Challenge, response: Response):
     else:
       response.status_code = status.HTTP_401_UNAUTHORIZED
       message = "gtfo"
-  elif challenge_result == b'true':
-    message = "already passed"
   else:
     message = "no challenge, request one"
   return {"result": message}
@@ -29,17 +27,24 @@ async def route_challenge_get(fingerprint: str, response: Response):
   key = get_database().get_from_db(f'{fingerprint}:publickey')
   if key == None:
     response.status_code = status.HTTP_404_NOT_FOUND
-    return {"result": "key not found"} 
+    message = "key_not_found"
   import_publickey(key)
+  challenge_result = check_challenge(fingerprint)
+  if not challenge_result:
+    message = "You have 60 secm,eonds before your challenge expires! Your challenge secret:" + create_challenge(fingerprint)
+    message = encrypt_message(message, fingerprint).data
+  else:
+    message = ""
+  return {"result": message}
+
+def create_challenge(fingerprint: str):
+  secret = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
+  get_database().add_to_db(f'{fingerprint}:challenge', secret, 60)
+  get_database().add_to_db(f'{fingerprint}:challenge_passed', 'false', 60)
+  return secret
+
+def check_challenge(fingerprint: str):
   challenge_result = get_database().get_from_db(f'{fingerprint}:challenge_passed')
-  print(challenge_result, flush=True)
-  if challenge_result == None:
-    secret = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
-    get_database().add_to_db(f'{fingerprint}:challenge', secret, 60)
-    get_database().add_to_db(f'{fingerprint}:challenge_passed', 'false', 60)
-    encrypted_challenge = encrypt_message("You have 60 seconds before your challenge expires! Your challenge secret: " + secret + "\n", fingerprint)
-  elif challenge_result == b'false':
-    return {"result": "you already have pending challenge"}
-  elif challenge_result == b'true':
-    return {"result": "already passed challenge, wait for a bit"}
-  return {"result": encrypted_challenge.data}
+  if challenge_result != None:
+    challenge_result = challenge_result.decode('utf-8')
+  return challenge_result in ['true']
