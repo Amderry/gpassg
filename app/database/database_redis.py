@@ -9,7 +9,7 @@ class Redis(Database):
     return self.client.set(key, value, ex=ttl)
 
   def delete_from_db(self, key):
-    pass
+    return self.client.delete(key) 
 
   def edit_in_db(self, key: str, value: str):
     pass
