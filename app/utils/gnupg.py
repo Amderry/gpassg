@@ -20,5 +20,5 @@ def encrypt_message(message: str, recepient: str):
 def get_recipients(message: str):
   return gpg.get_recipients(message)
 
-def delete_key(fingerprint: str):
+def delete_publickey(fingerprint: str):
   return gpg.delete_keys(fingerprint)
