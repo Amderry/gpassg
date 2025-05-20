@@ -44,7 +44,7 @@ def create_challenge(fingerprint: str):
   secret = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
   get_database().add_to_db(f'{fingerprint}:challenge', secret, 60)
   get_database().add_to_db(f'{fingerprint}:challenge_passed', 'false', 60)
-  return encrypt_message(message + secret + '\n', fingerprint).data
+  return encrypt_message(secret + '\n', fingerprint).data
 
 def check_challenge(fingerprint: str):
   challenge_result = get_database().get_from_db(f'{fingerprint}:challenge_passed')
