@@ -3,4 +3,4 @@ import config
 
 def get_database():
   if config.STORAGE_TYPE.lower() == 'redis':
-    return Redis(config.STORAGE_HOST, config.STORAGE_PORT, config.STORAGE_USERNAME, config.STORAGE_PASSWORD)
+    return Redis(config.STORAGE_HOST, config.STORAGE_PORT, config.STORAGE_PASSWORD, config.STORAGE_USERNAME)
