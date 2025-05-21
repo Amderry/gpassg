@@ -17,7 +17,7 @@ async def route_challenge_post(challenge: Challenge, response: Response):
     message = "challenge passed, you have 2 min to go"
   else:
     message = "gtfo"
-    response.status_code = status.HTTP_401_UNATHORIZED
+    response.status_code = status.HTTP_401_UNAUTHORIZED
   return {"result": message}
 
 @router.get("/get")
