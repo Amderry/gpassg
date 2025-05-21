@@ -1,7 +1,7 @@
 import gnupg
 import os
 
-gpghome = os.getenv('GNUPG_HOME', f'{os.getenv("HOME")}/.gnupg)')
+gpghome = os.getenv('GNUPG_HOME', f'{os.getenv("HOME")}/.gnupg')
 
 gpg = gnupg.GPG(gnupghome=gpghome)
 gpg.encoding = 'UTF-8'
