@@ -12,6 +12,8 @@ RUN pip install -r requirements.txt
 
 USER gpassg
 
+RUN mkdir $HOME/.gnupg
+
 COPY ./app .
 
 ENTRYPOINT ["uvicorn"]
