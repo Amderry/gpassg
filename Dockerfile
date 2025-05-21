@@ -16,6 +16,6 @@ RUN mkdir $HOME/.gnupg
 
 COPY ./app .
 
-ENTRYPOINT ["uvicorn"]
+#ENTRYPOINT ["uvicorn"]
 
-CMD ["main:app"]
+#CMD ["main:app"]
