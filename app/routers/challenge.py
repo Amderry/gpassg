@@ -22,7 +22,7 @@ async def route_challenge_post(challenge: Challenge, response: Response):
 
 @router.get("/get")
 async def route_challenge_get(fingerprint: str, response: Response):
-  key = get_database().get_from_db(f'{fingerprint}:publickey')
+  key = get_database().get_from_db(f'fingerprint:{fingerprint}:publickey')
   if key == None:
     response.status_code = status.HTTP_404_NOT_FOUND
     message = "key not found"
@@ -42,19 +42,19 @@ async def route_challenge_get(fingerprint: str, response: Response):
 def create_challenge(fingerprint: str):
   message = "You have 60 seconds before your challenge expires! Your challenge secret: "
   secret = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
-  get_database().add_to_db(f'{fingerprint}:challenge', secret, 60)
-  get_database().add_to_db(f'{fingerprint}:challenge_passed', 'false', 60)
+  get_database().add_to_db(f'fingerprint:{fingerprint}:challenge', secret, 60)
+  get_database().add_to_db(f'fingerprint:{fingerprint}:challenge_passed', 'false', 60)
   return encrypt_message(secret + '\n', fingerprint).data
 
 def check_challenge(fingerprint: str):
-  challenge_result = get_database().get_from_db(f'{fingerprint}:challenge_passed')
+  challenge_result = get_database().get_from_db(f'fingerprint:{fingerprint}:challenge_passed')
   if challenge_result != None:
     return challenge_result.decode('utf-8') in ['true']
   else:
     return None
 
 def pass_challenge(fingerprint: str, ttl: int):
-  get_database().add_to_db(f'{fingerprint}:challenge_passed', 'true', ttl)
+  get_database().add_to_db(f'fingerprint:{fingerprint}:challenge_passed', 'true', ttl)
 
 def compare_secret(fingerprint: str, secret: str):
   challenge_result = check_challenge(fingerprint)
@@ -63,5 +63,5 @@ def compare_secret(fingerprint: str, secret: str):
   elif challenge_result:
     return True
   else:
-    db_secret = get_database().get_from_db(f'{fingerprint}:challenge').decode('utf-8')
+    db_secret = get_database().get_from_db(f'fingerprint:{fingerprint}:challenge').decode('utf-8')
     return db_secret == secret

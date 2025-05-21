@@ -17,13 +17,13 @@ async def route_publickey_import(publickey: PublicKey, response: Response):
 def push_publickey(publickey: str):
   fingerprints = get_fingerprints_wrapper(publickey)
   for fp in fingerprints:
-    get_database().add_to_db(f'{fp}:publickey', publickey)
+    get_database().add_to_db(f'fingerprint:{fp}:publickey', publickey)
 
 def del_publickey(fingerprint: str):
-  get_database().delete_from_db(f'{fingerprint}:publickey')
+  get_database().delete_from_db(f'fingerprint:{fingerprint}:publickey')
 
 def get_publickey(fingerprint: str):
-  return get_database().get_from_db(f'{fingerprint}:publickey')
+  return get_database().get_from_db(f'fingerprint:{fingerprint}:publickey')
 
 def import_publickey_wrapper(key_text: str):
   push_publickey(key_text)
