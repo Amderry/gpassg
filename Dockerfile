@@ -12,7 +12,7 @@ RUN pip install -r requirements.txt
 
 USER gpassg
 
-RUN mkdir $HOME/.gnupg && chmod 700 $HOME/.gnupg && gpg 
+RUN mkdir $HOME/.gnupg && chmod 700 $HOME/.gnupg && gpg --version
 
 COPY ./app .
 
