@@ -12,10 +12,10 @@ RUN pip install -r requirements.txt
 
 USER gpassg
 
-RUN mkdir $HOME/.gnupg
+RUN mkdir $HOME/.gnupg && chmod 700 $HOME/.gnupg && gpg 
 
 COPY ./app .
 
-#ENTRYPOINT ["uvicorn"]
+ENTRYPOINT ["uvicorn"]
 
-#CMD ["main:app"]
+CMD ["main:app"]
