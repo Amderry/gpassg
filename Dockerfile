@@ -10,4 +10,6 @@ RUN pip install -r requirements
 
 COPY ./app .
 
-ENTRYPOINT ["uvicorn", "main:app"]
+ENTRYPOINT ["uvicorn"]
+
+CMD ["main:app"]
