@@ -1,0 +1,10 @@
+---
+services:
+  gpassg:
+    container_name: gpassg
+    image: git.cadred.ru/chilyumov_fedor/gpassg:latest
+    restart: always
+    ports:
+    - "8108:8000"
+    env_file:
+    - .env
