@@ -31,13 +31,19 @@
 fingerprint=your_fingerprint&key=your_entry_name
 ```
 
-4. /challenge/post - POST метод для отправки секрета челленджа, тело запроса:
+4. /entry/delete - DELETE метод для удаления записи по ключу, имеет два параметра зпроса:
+
+```
+fingerprint=your_fingerprint&key=your_entry_name
+```
+
+5. /challenge/post - POST метод для отправки секрета челленджа, тело запроса:
 
 ```
 {"fingerprint": your_fingerprint, "secret": your_challenge_secret}
 ```
 
-5. /challenge/get - GET метод для получения челленджа, имеет один параметр запроса
+6. /challenge/get - GET метод для получения челленджа, имеет один параметр запроса
 
 ```
 fingerprint=your_fingerprint
