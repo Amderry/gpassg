@@ -6,7 +6,7 @@ from json import loads
 from urllib.parse import urlencode
 
 async def challenge_middleware(request: Request, call_next):
-  if request.url.path not in ['/entry/post', '/entry/get', '/publickey/import']:
+  if request.url.path not in ['/entry/post', '/entry/get', '/publickey/import', '/entry/delete']:
     return await call_next(request)
   elif request.url.path == '/publickey/import':
     fingerprint = get_fingerprints_wrapper(loads(await request.body())['key_text'])[0]
@@ -23,7 +23,7 @@ async def challenge_middleware(request: Request, call_next):
       delete_publickey_wrapper(fingerprint)
     return response
   else:
-    if request.method == 'GET':
+    if request.method == 'GET' or request.method == 'DELETE':
       fingerprint = request.query_params['fingerprint']
     else:
       fingerprint = loads(await request.body())['fingerprint']
