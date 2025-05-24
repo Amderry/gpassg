@@ -13,6 +13,5 @@ steps:
       - docker compose push
 
 when:
-  - branch: master
+  - branch: deployment
     event: [manual, push]
-

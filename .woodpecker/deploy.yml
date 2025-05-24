@@ -19,7 +19,7 @@ steps:
         docker compose up -d
 
     when:
-      - branch: master
+      - branch: deployment 
         event: [manual, push]
 
 depends_on:
