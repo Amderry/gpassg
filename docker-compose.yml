@@ -3,6 +3,8 @@ services:
   gpassg:
     container_name: gpassg
     image: git.cadred.ru/chilyumov_fedor/gpassg:latest
+    build:
+      context: .
     restart: always
     ports:
     - "8108:8000"
