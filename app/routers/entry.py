@@ -21,8 +21,6 @@ async def route_entry_post(entry: Entry, response: Response):
     if not encrypt_result.ok:
       response.status_code = status.HTTP_400_BAD_REQUEST
     else:
-      sha256.update(entry.key.encode('utf-8'))
-      hashed_key = sha256.hexdigest()
       get_database().add_to_db(f'fingerprint:{entry.fingerprint}:message:{hash_str(entry.key)}', encrypt_result.data)
     return {"result": encrypt_result.status}
 
