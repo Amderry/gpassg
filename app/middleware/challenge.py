@@ -20,6 +20,8 @@ async def challenge_middleware(request: Request, call_next):
     if (challenge_result == None or not challenge_result) and not publickey_exists:
       delete_publickey_wrapper(fingerprint)
     return response
+  elif request.url.path in ['/challenge/get', '/challenge/post']:
+    return await call_next(request)
   else:
     if request.method == 'GET' or request.method == 'DELETE':
       fingerprint = request.query_params['fingerprint']
