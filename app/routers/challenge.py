@@ -2,7 +2,7 @@ from fastapi import status, Body, APIRouter, Depends, Response
 from database.database_fabric import get_database
 from utils.gnupg import encrypt_message, import_publickey
 from schemas.challenge import Challenge
-from utils import sha256
+from utils.sha256 import hash_str
 import random
 import string
 
@@ -43,7 +43,7 @@ async def route_challenge_get(fingerprint: str, response: Response):
 def create_challenge(fingerprint: str):
   message = "You have 60 seconds before your challenge expires! Your challenge secret: "
   secret = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
-  get_database().add_to_db(f'fingerprint:{fingerprint}:challenge', sha256.hash_str(secret), 60)
+  get_database().add_to_db(f'fingerprint:{fingerprint}:challenge', hash_str(secret), 60)
   get_database().add_to_db(f'fingerprint:{fingerprint}:challenge_passed', 'false', 60)
   return encrypt_message(secret + '\n', fingerprint).data
 
@@ -65,5 +65,5 @@ def compare_secret(fingerprint: str, secret: str):
     return True
   else:
     db_secret = get_database().get_from_db(f'fingerprint:{fingerprint}:challenge').decode('utf-8')
-    secret = sha256.hash_str(secret)
+    secret = hash_str(secret)
     return db_secret == secret
