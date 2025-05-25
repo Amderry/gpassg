@@ -8,7 +8,6 @@ router = APIRouter()
 
 @router.post("/post", status_code=200)
 async def route_entry_post(entry: Entry, response: Response):
-  sha256 = hashlib.sha256()
   if entry.encrypted:
     recipients = get_recipients(entry.message)
     if len(recipients) == 0:
