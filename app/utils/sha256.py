@@ -5,5 +5,5 @@ def hash_str(key: str):
   sha256 = hashlib.sha256()
   key = key.encode('utf-8')
   sha256.update(key)
-  sha256.update(config.SALT)
+  sha256.update(config.SALT.encode('utf-8')
   return sha256.hexdigest()
