@@ -37,7 +37,7 @@ class ChallengeMiddleware(BaseHTTPMiddleware):
       return await call_next(request)
 
     # Proceed incoming request to any of /publickey routes (it requires more complicated logic). Importing publickey and then instantly deleting it assuming that client have no access to his key apriori and if he returns right challenge - import it again, now permanently.
-    elif base_path.startswith('/publickey'):
+    elif base_path in ['/publickey/import']:
       body = await request.body()
       print(body, flush=False)
       try:
