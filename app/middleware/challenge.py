@@ -20,9 +20,7 @@ async def challenge_middleware(request: Request, call_next):
     if (challenge_result == None or not challenge_result) and not publickey_exists:
       delete_publickey_wrapper(fingerprint)
     return response
-  elif request.url.path in ['/challenge/get', '/challenge/post', '/']:
-    return await call_next(request)
-  else:
+  elif request.url.path in ['/entry/get', '/entry/post', '/entry/delete']:
     if request.method == 'GET' or request.method == 'DELETE':
       fingerprint = request.query_params['fingerprint']
     else:
@@ -32,3 +30,5 @@ async def challenge_middleware(request: Request, call_next):
       return JSONResponse(content={"info": "challenge required"}, status_code=status.HTTP_401_UNAUTHORIZED)
     else:
       return await call_next(request)
+  else:
+    return await call_next(request)
