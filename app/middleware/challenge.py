@@ -1,34 +1,51 @@
+from starlette.applications import Starlette
+from starlette.middleware import Middleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse
-from routers.challenge import check_challenge 
-from routers.publickey import import_publickey_wrapper, delete_publickey_wrapper, get_publickey, get_fingerprints_wrapper
 from json import loads
 from urllib.parse import urlencode
+from routers.publickey import import_publickey_wrapper, delete_publickey_wrapper, get_publickey, get_fingerprints_wrapper
+from routers.challenge import check_challenge 
 
-async def challenge_middleware(request: Request, call_next):
-  if request.url.path == '/publickey/import':
-    fingerprint = get_fingerprints_wrapper(loads(await request.body())['key_text'])[0]
-    challenge_result = check_challenge(fingerprint)
-    publickey_exists = get_publickey(fingerprint)
-    if (challenge_result == None or not challenge_result) and not publickey_exists:
-      import_publickey_wrapper(loads(await request.body())['key_text'])
-      request.scope['path'] = request.url.path.replace("/publickey/import", f'/challenge/get')
-      request.scope['method'] = 'GET'
-      query_params = {"fingerprint": fingerprint}
-      request.scope['query_string'] = urlencode(query_params).encode('utf-8')
-    response = await call_next(request)
-    if (challenge_result == None or not challenge_result) and not publickey_exists:
-      delete_publickey_wrapper(fingerprint)
-    return response
-  elif request.url.path in ['/entry/get', '/entry/post', '/entry/delete']:
-    if request.method == 'GET' or request.method == 'DELETE':
-      fingerprint = request.query_params['fingerprint']
-    else:
-      fingerprint = loads(await request.body())['fingerprint']
-    challenge_passed = check_challenge(fingerprint)
-    if not challenge_passed:
-      return JSONResponse(content={"info": "challenge required"}, status_code=status.HTTP_401_UNAUTHORIZED)
+class ChallengeMiddleware(BaseHTTPMiddleware):
+  async def dispatch(self, request, call_next):
+    base_path = request.url.path
+
+    # Check if incoming request to any of /entry routes have a pending challenge
+    if base_path.startswith('/entry'):
+      fingerprint = extract_fingerprint(request)
+      challenge_creation_needed = challenge_exists(fingerprint)
+      if challenge_creation_needed:
+       return JSONResponse(content={"info": "challenge required"}, status_code=status.HTTP_401_UNAUTHORIZED)
+      return await call_next(request)
+
+    # Proceed incoming request to any of /publickey routes (it requires more complicated logic). Importing publickey and then instantly deleting it assuming that client have no access to his key apriori and if he returns right challenge - import it again, now permanently.
+    elif base_path.startswith('/publickey'):
+      body = await request.body()
+      fingerprint = get_fingerprints_wrapper(loads(body)['key_text'])[0]
+      challenge_result = check_challenge(fingerprint)
+      publickey_exists = get_publickey(fingerprint)
+      if (challenge_result == None or not challenge_result) and not publickey_exists:
+        import_publickey_wrapper(loads(body)['key_text'])
+        request.scope['path'] = request.url.path.replace("/publickey/import", f'/challenge/get')
+        request.scope['method'] = 'GET'
+        query_params = {"fingerprint": fingerprint}
+        request.scope['query_string'] = urlencode(query_params).encode('utf-8')
+      response = await call_next(request)
+      if (challenge_result == None or not challenge_result) and not publickey_exists:
+        delete_publickey_wrapper(fingerprint)
+      return response
     else:
       return await call_next(request)
+
+def challenge_exists(fingerprint: str):
+  challenge_passed = check_challenge(fingerprint)
+  return challenge_passed == None
+
+async def extract_fingerprint(request: Request):
+  if request.method == 'GET' or request.method == 'DELETE':
+    fingerprint = request.query_params['fingerprint']
   else:
-    return await call_next(request)
+    fingerprint = loads(await request.body())['fingerprint']
+  return fingerprint
